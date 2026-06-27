@@ -184,14 +184,6 @@ class SessionManager:
                 ischool_course.id = course_id
                 ischool_course.name = course_name
                 ischool_course.file_url = file_url
-                ischool_course.syllabus_url = (
-                    f"https://aps.ntut.edu.tw/course/tw/ShowSyllabus.jsp"
-                    f"?snum={course_id}"
-                )
-                ischool_course.description_url = (
-                    f"https://aps.ntut.edu.tw/course/tw/Curr.jsp"
-                    f"?format=-2&snum={course_id}"
-                )
                 self.ischool_courses.setdefault(seme, {})[course_id] = ischool_course
 
         return True
