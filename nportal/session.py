@@ -12,6 +12,7 @@ class SessionManager:
         self.student_id = ""
         self.seme_list: list[str] = []
         self.course_list: dict[str, dict[str, Course]] = {}
+        self.ischool_courses: dict[str, dict[str, Course]] = {}
         self.student_info: dict = {}
 
     @property
@@ -46,6 +47,7 @@ class SessionManager:
         self.scraper = WebScraper()
         self.seme_list.clear()
         self.course_list.clear()
+        self.ischool_courses.clear()
         self.student_info.clear()
         self.student_id = ""
 
@@ -104,6 +106,12 @@ class SessionManager:
             credits = re.search(r"<td align=CENTER>(\d.\d)", class_html)
             if credits:
                 course.credits = credits.group(1)
+
+            # 偵測退選/撤選狀態
+            if re.search(r"(?:退選|撤選)", class_html):
+                course.status = "退選"
+            else:
+                course.status = "修課中"
 
             course_info = re.search(
                 r'<A href="Curr.jsp.format=-2&code=(.{7})">(.+?)</A>', class_html
@@ -164,14 +172,35 @@ class SessionManager:
 
             seme = data.group(2)
             course_id = data.group(4)
-            course: Course | None = self.course_list.get(seme, {}).get(course_id)
+            file_url = ISCHOOL_FILE_BASE_URL + data.group(1)
+            course_name = data.group(3).replace("_", " ")
+
+            course = self.course_list.get(seme, {}).get(course_id)
             if course:
-                course.file_url = ISCHOOL_FILE_BASE_URL + data.group(1)
+                course.file_url = file_url
+            else:
+                ischool_course = Course(self.scraper)
+                ischool_course.seme = seme
+                ischool_course.id = course_id
+                ischool_course.name = course_name
+                ischool_course.file_url = file_url
+                ischool_course.syllabus_url = (
+                    f"https://aps.ntut.edu.tw/course/tw/ShowSyllabus.jsp"
+                    f"?snum={course_id}"
+                )
+                ischool_course.description_url = (
+                    f"https://aps.ntut.edu.tw/course/tw/Curr.jsp"
+                    f"?format=-2&snum={course_id}"
+                )
+                self.ischool_courses.setdefault(seme, {})[course_id] = ischool_course
 
         return True
 
-    def get_course(self, seme: str, course_id: str) -> Course | None:
-        return self.course_list.get(seme, {}).get(course_id)
+    def get_any_course(self, seme: str, course_id: str) -> Course | None:
+        course = self.course_list.get(seme, {}).get(course_id)
+        if course:
+            return course
+        return self.ischool_courses.get(seme, {}).get(course_id)
 
     async def _capture_student_info(self, login_json: dict) -> None:
         """從登入回應 JSON 和 nportal 首頁取得個人資訊"""

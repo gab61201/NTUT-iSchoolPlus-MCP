@@ -1,5 +1,6 @@
 import re
 import json
+import logging
 from .scraper import WebScraper
 
 
@@ -12,6 +13,7 @@ class Course:
         self.id = ""
         self.bid = ""
         self.credits = ""
+        self.status = ""
         self.data = {}
 
         self.description_url = ""
@@ -107,9 +109,14 @@ class Course:
 
         response = await self.scraper.get(self.file_url)
         if not response:
+            logging.error(f"fetch_files GET failed: {self.file_url}")
             return False
 
-        self.file_tree = response.json()["data"]["path"]["item"]
+        try:
+            data = response.json()
+            self.file_tree = data["data"]["path"]["item"]
+        except (KeyError, TypeError, json.JSONDecodeError):
+            self.file_tree = []
 
         def parse_tree(tree: list):
             for i in range(len(tree) - 1, -1, -1):
