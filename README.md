@@ -1,0 +1,365 @@
+# NTUT iSchoolPlus MCP
+
+MCP (Model Context Protocol) server for NTUT iSchool+ — 讓 AI 幫你查課表、大綱、檔案、公告。
+
+## 安裝
+
+需要 Python ≥3.11 + [uv](https://docs.astral.sh/uv/)：
+
+```bash
+git clone <repo-url>
+cd NTUT-iSchoolPlus-MCP
+uv sync
+```
+
+## 使用方式
+
+### 1. MCP Inspector 測試
+
+```bash
+export NTUT_STUDENT_ID=你的學號
+export NTUT_PASSWORD=你的密碼
+uv run mcp dev main.py
+```
+
+瀏覽器會自動打開 `http://localhost:6274`，可在 Web GUI 中逐一測試所有 tools。
+
+### 2. 接入 Claude Desktop
+
+在 `claude_desktop_config.json` 加入：
+
+```json
+{
+  "mcpServers": {
+    "ntut-ischoolplus": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/NTUT-iSchoolPlus-MCP", "python", "main.py"],
+      "env": {
+        "NTUT_STUDENT_ID": "你的學號",
+        "NTUT_PASSWORD": "你的密碼"
+      }
+    }
+  }
+}
+```
+
+### 3. 接入 OpenCode
+
+在 `opencode.json` 加入（含環境變數，`login()` 免傳參數）：
+
+```json
+{
+  "mcp": {
+    "ntut-ischoolplus": {
+      "type": "local",
+      "command": ["uv", "run", "--directory", "/path/to/NTUT-iSchoolPlus-MCP", "python", "main.py"],
+      "environment": {
+        "NTUT_STUDENT_ID": "你的學號",
+        "NTUT_PASSWORD": "你的密碼"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+### 4. 接入 Hermes Agent
+
+在 `~/.hermes/config.yaml` 加入：
+
+```yaml
+mcp_servers:
+  ntut-ischoolplus:
+    command: "uv"
+    args: ["run", "--directory", "/path/to/NTUT-iSchoolPlus-MCP", "python", "main.py"]
+    environment:
+      NTUT_STUDENT_ID: "你的學號"
+      NTUT_PASSWORD: "你的密碼"
+```
+
+工具在 Hermes 中會自動加上前綴，例如 `mcp_ntut-ischoolplus_login`。啟動 `hermes chat` 後即可使用。
+
+### 5. 接入 OpenClaw
+
+在 `~/.openclaw/openclaw.json` (JSON5) 加入：
+
+```json5
+{
+  mcp: {
+    "ntut-ischoolplus": {
+      command: ["uv", "run", "--directory", "/path/to/NTUT-iSchoolPlus-MCP", "python", "main.py"],
+      environment: {
+        NTUT_STUDENT_ID: "你的學號",
+        NTUT_PASSWORD: "你的密碼",
+      },
+    },
+  },
+}
+```
+
+OpenClaw 支援 config hot reload，修改後無需重啟。
+
+## 環境變數
+
+| 變數 | 說明 |
+|------|------|
+| `NTUT_STUDENT_ID` | 學號，設定後 `login()` 可無參數呼叫 |
+| `NTUT_PASSWORD` | nportal 密碼 |
+
+亦可在 terminal 中直接 export：
+```bash
+export NTUT_STUDENT_ID=你的學號
+export NTUT_PASSWORD=你的密碼
+```
+
+## Tools (20)
+
+### login
+
+登入 NTUT nportal 並執行 SSO 驗證（課程系統 + i 學園）。可傳入帳密，或設定環境變數 `NTUT_STUDENT_ID` / `NTUT_PASSWORD` 後無參數呼叫。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `student_id` | string | 學號（可省略，改用環境變數） |
+| `password` | string | nportal 密碼（可省略，改用環境變數） |
+
+### logout
+
+清除伺服器上的 session 並關閉連線。
+
+無參數。
+
+### get_semester_list
+
+取得該學生所有修課學期代碼列表（例如 `["1132", "1131"]`）。
+
+無參數。須先登入。
+
+### get_student_info
+
+從 nportal 首頁抓取個人資訊（姓名、系所、學號等）。登入時自動快取。
+
+無參數。須先登入。
+
+### get_timetable
+
+取得指定學期的課表（二維陣列格式，第一列為星期標頭，第一欄為節次）。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼，例如 `"1142"`（114 年度第 2 學期） |
+
+須先登入。
+
+### get_course_list
+
+取得指定學期的全部課程列表，包含 `course_id`（6 位數字）、課程名稱、學分數。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+
+須先登入。回傳的 `course_id` 可用於其他 course tools。
+
+### get_semester_credits
+
+計算指定學期的總學分數（浮點數加總）。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+
+須先登入。
+
+### get_course_syllabus
+
+取得指定課程的授課大綱：教師、學分、時數、必選修、修課人數、課程大綱、課程進度、評分標準、教科書、諮詢管道等。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字，從 `get_course_list` 取得） |
+
+須先登入。
+
+### get_course_description
+
+取得指定課程的中文與英文簡介。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+
+須先登入。
+
+### get_course_files
+
+取得指定課程在 i 學園上的檔案列表（不含影片）。回傳每個檔案的 identifier 與檔名。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+
+須先登入。
+
+### get_course_file_url
+
+取得指定檔案的直接下載網址（href）。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `identifier` | string | 檔案識別碼（從 `get_course_files` 取得） |
+
+須先登入。
+
+### download_course_file
+
+下載指定檔案到本機路徑。目錄不存在時會自動建立，支援串流下載大型檔案。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `identifier` | string | 檔案識別碼 |
+| `save_path` | string | 本機儲存路徑（含檔名） |
+
+須先登入。
+
+### download_course_all_files
+
+批次下載課程全部檔案到指定目錄。自動跳過已下載檔案（透過 `_downloads.json` 紀錄追蹤）、自動重試（最多 3 次，指數退避）。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `save_dir` | string | 本機儲存目錄路徑 |
+
+須先登入。回傳 `saved` / `skipped` / `failed` 逐檔明細陣列及各計數。
+
+### get_course_videos
+
+取得指定課程在 i 學園上的錄影列表。回傳每部影片的 identifier 與標題。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+
+須先登入。
+
+### get_course_video_url
+
+取得指定影片的串流網址。支援 iStudy 內嵌播放器、local 影片檔、IP cam 三種來源。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `identifier` | string | 影片識別碼（從 `get_course_videos` 取得） |
+
+須先登入。
+
+### get_bulletin_list
+
+取得指定課程的公告列表。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+
+須先登入。
+
+### get_bulletin_reply
+
+取得指定公告的回覆串（含完整回覆內容）。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `nid` | string | 公告編號（從 `get_bulletin_list` 回傳的 `node` 欄位取得） |
+
+須先登入。
+
+### get_bulletin_reply_by_index
+
+用索引（第幾則公告）直接查回覆，不需要手動找 nid。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `index` | integer | 公告索引（0 = 第一則） |
+
+須先登入。
+
+### get_course_note
+
+讀取指定課程的筆記（JSON 檔，含建立/更新時間戳）。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `notes_dir` | string | 筆記儲存目錄路徑 |
+
+### set_course_note
+
+寫入指定課程的筆記（Markdown 格式）。自動建立目錄，保留首次建立時間。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+| `content` | string | 筆記內容（支援 Markdown） |
+| `notes_dir` | string | 筆記儲存目錄路徑 |
+
+## 使用範例
+
+在 AI 對話中直接說：
+
+```
+幫我查這學期的課表
+查機率的大綱
+機率有哪些錄影
+查機率第 0 則公告的回覆
+```
+
+## 架構
+
+```
+├── main.py              # MCP 入口（FastMCP server）
+├── server/
+│   ├── __init__.py
+│   └── tools/            # 20 個 MCP tool（一檔一類）
+│       ├── __init__.py       # FastMCP + session + 匯入
+│       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
+│       ├── auth.py           # login, logout
+│       ├── info.py           # get_student_info
+│       ├── semester.py       # get_semester_list
+│       ├── timetable.py      # get_timetable, get_course_list, get_semester_credits
+│       ├── syllabus.py       # get_course_syllabus, get_course_description
+│       ├── files.py          # get_course_files, get_course_file_url, download_course_file, download_course_all_files
+│       ├── videos.py         # get_course_videos, get_course_video_url
+│       ├── bulletin.py       # get_bulletin_list, get_bulletin_reply, get_bulletin_reply_by_index
+│       └── notes.py          # get_course_note, set_course_note
+├── nportal/
+│   ├── __init__.py
+│   ├── scraper.py       # httpx 網路爬蟲（session、login、SSO）
+│   ├── session.py       # SessionManager（狀態管理、課表解析）
+│   ├── course.py        # Course 類別（大綱、檔案、影片、公告）
+│   ├── credentials.py   # CredentialManager（keyring 密碼儲存）
+│   └── constants.py     # URL 常數
+├── pyproject.toml
+└── NTUT-iSchoolMate/    # 原始 NiceGUI 桌面版（參考用）
+```
+
+## License
+
+MIT
