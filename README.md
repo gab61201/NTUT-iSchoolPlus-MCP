@@ -1,5 +1,7 @@
 # NTUT iSchoolPlus MCP
 
+[![GitHub](https://img.shields.io/badge/github-gab61201/NTUT--iSchoolPlus--MCP-blue)](https://github.com/gab61201/NTUT-iSchoolPlus-MCP)
+
 MCP (Model Context Protocol) server for NTUT iSchool+ — 讓 AI 幫你查課表、大綱、檔案、公告。
 
 ## 安裝
@@ -7,7 +9,7 @@ MCP (Model Context Protocol) server for NTUT iSchool+ — 讓 AI 幫你查課表
 需要 Python ≥3.11 + [uv](https://docs.astral.sh/uv/)：
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/gab61201/NTUT-iSchoolPlus-MCP.git
 cd NTUT-iSchoolPlus-MCP
 uv sync
 ```
@@ -364,7 +366,6 @@ export NTUT_PASSWORD=你的密碼
 │   ├── scraper.py       # httpx 網路爬蟲（session、login、SSO）
 │   ├── session.py       # SessionManager（狀態管理、課表解析）
 │   ├── course.py        # Course 類別（大綱、檔案、影片、公告）
-│   ├── credentials.py   # CredentialManager（keyring 密碼儲存）
 │   └── constants.py     # URL 常數
 ├── pyproject.toml
 └── NTUT-iSchoolMate/    # 原始 NiceGUI 桌面版（參考用）
