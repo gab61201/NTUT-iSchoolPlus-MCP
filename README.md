@@ -367,8 +367,7 @@ export NTUT_PASSWORD=你的密碼
 │   ├── session.py       # SessionManager（狀態管理、課表解析）
 │   ├── course.py        # Course 類別（大綱、檔案、影片、公告）
 │   └── constants.py     # URL 常數
-├── pyproject.toml
-└── NTUT-iSchoolMate/    # 原始 NiceGUI 桌面版（參考用）
+└── pyproject.toml
 ```
 
 ## License
