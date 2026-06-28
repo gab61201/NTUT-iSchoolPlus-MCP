@@ -24,24 +24,16 @@ async def get_course_list(seme: str) -> str:
         {"course_id": c.id, "name": c.name, "credits": c.credits, "status": c.status}
         for c in session.course_list.get(seme, {}).values()
     ]
-    return json.dumps(
-        {"seme": seme, "courses": courses, "count": len(courses)},
-        ensure_ascii=False,
-    )
-
-
-@mcp.tool()
-async def get_semester_credits(seme: str) -> str:
-    _require_login()
-    if seme not in session.course_list:
-        await session.fetch_timetable(seme)
     total = 0.0
     for c in session.course_list.get(seme, {}).values():
         try:
             total += float(c.credits)
         except (ValueError, TypeError):
             pass
-    return json.dumps({"seme": seme, "total_credits": total}, ensure_ascii=False)
+    return json.dumps(
+        {"seme": seme, "courses": courses, "count": len(courses), "total_credits": total},
+        ensure_ascii=False,
+    )
 
 
 @mcp.tool()

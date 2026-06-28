@@ -114,7 +114,7 @@ export NTUT_STUDENT_ID=你的學號
 export NTUT_PASSWORD=你的密碼
 ```
 
-## Tools (17)
+## Tools (16)
 
 ### login
 
@@ -149,23 +149,13 @@ export NTUT_PASSWORD=你的密碼
 
 ### get_course_list
 
-取得指定學期的全部課程列表，包含 `course_id`（6 位數字）、課程名稱、學分數。
+取得指定學期的全部課程列表，包含 `course_id`（6 位數字）、課程名稱、學分數、狀態，並一併回傳總學分。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
 | `seme` | string | 學期代碼 |
 
 須先登入。回傳的 `course_id` 可用於其他 course tools。
-
-### get_semester_credits
-
-計算指定學期的總學分數（浮點數加總）。
-
-| 參數 | 類型 | 說明 |
-|------|------|------|
-| `seme` | string | 學期代碼 |
-
-須先登入。
 
 ### get_ischool_course_list
 
@@ -317,12 +307,12 @@ export NTUT_PASSWORD=你的密碼
 ├── main.py              # MCP 入口（FastMCP server）
 ├── server/
 │   ├── __init__.py
-│   └── tools/            # 17 個 MCP tool（一檔一類）
+│   └── tools/            # 16 個 MCP tool（一檔一類）
 │       ├── __init__.py       # FastMCP + session + 匯入
 │       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
 │       ├── auth.py           # login (含 student info), logout
 │       ├── semester.py       # get_semester_list
-│       ├── timetable.py      # get_timetable, get_course_list, get_semester_credits, get_ischool_course_list
+│       ├── timetable.py      # get_timetable, get_course_list (含 total_credits), get_ischool_course_list
 │       ├── syllabus.py       # get_course_syllabus, get_course_description
 │       ├── files.py          # ischool_file_download
 │       ├── videos.py         # get_course_videos, get_course_video_url
