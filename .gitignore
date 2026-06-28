@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 uv.lock
-tmp/
+test/
+dev/
 *.html
 tool_test_report.md
