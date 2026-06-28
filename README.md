@@ -114,7 +114,7 @@ export NTUT_STUDENT_ID=你的學號
 export NTUT_PASSWORD=你的密碼
 ```
 
-## Tools (21)
+## Tools (18)
 
 ### login
 
@@ -205,53 +205,27 @@ export NTUT_PASSWORD=你的密碼
 
 須先登入。
 
-### get_course_files
+### ischool_file_download
 
-取得指定課程在 i 學園上的檔案列表（不含影片）。回傳每個檔案的 identifier 與檔名。
+從 i 學園下載課程檔案。`save_path` 為唯一必填參數，其餘依組合決定行為：
+
+| `seme` | `course_id` | `identifier` | 行為 |
+|:---:|:---:|:---:|------|
+| 指定 | 指定 | 指定 | 下載該檔案到 `save_path`（含檔名） |
+| 指定 | 指定 | 空 | 下載該課程全部檔案到 `save_path/{課程名}_{課號}/` |
+| 指定 | 空 | — | 下載該學期所有課程到 `save_path/{seme}/{課程名}_{課號}/` |
+| 空 | — | — | 下載全部學期所有課程，按 `seme/課程/` 分層 |
+
+支援自動重試（最多 3 次，指數退避），透過 `_downloads.json` 追蹤已下載檔案。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
-| `seme` | string | 學期代碼 |
-| `course_id` | string | 課程代碼（6 位數字） |
+| `save_path` | string | 本機儲存路徑或目錄 |
+| `seme` | string | 學期代碼（可省略） |
+| `course_id` | string | 課程代碼（6 位數字，可省略） |
+| `identifier` | string | 檔案識別碼（可省略） |
 
 須先登入。
-
-### get_course_file_url
-
-取得指定檔案的直接下載網址（href）。
-
-| 參數 | 類型 | 說明 |
-|------|------|------|
-| `seme` | string | 學期代碼 |
-| `course_id` | string | 課程代碼（6 位數字） |
-| `identifier` | string | 檔案識別碼（從 `get_course_files` 取得） |
-
-須先登入。
-
-### download_course_file
-
-下載指定檔案到本機路徑。目錄不存在時會自動建立，支援串流下載大型檔案。
-
-| 參數 | 類型 | 說明 |
-|------|------|------|
-| `seme` | string | 學期代碼 |
-| `course_id` | string | 課程代碼（6 位數字） |
-| `identifier` | string | 檔案識別碼 |
-| `save_path` | string | 本機儲存路徑（含檔名） |
-
-須先登入。
-
-### download_course_all_files
-
-批次下載課程全部檔案到指定目錄。自動跳過已下載檔案（透過 `_downloads.json` 紀錄追蹤）、自動重試（最多 3 次，指數退避）。
-
-| 參數 | 類型 | 說明 |
-|------|------|------|
-| `seme` | string | 學期代碼 |
-| `course_id` | string | 課程代碼（6 位數字） |
-| `save_dir` | string | 本機儲存目錄路徑 |
-
-須先登入。回傳 `saved` / `skipped` / `failed` 逐檔明細陣列及各計數。
 
 ### get_course_videos
 
@@ -349,7 +323,7 @@ export NTUT_PASSWORD=你的密碼
 ├── main.py              # MCP 入口（FastMCP server）
 ├── server/
 │   ├── __init__.py
-│   └── tools/            # 21 個 MCP tool（一檔一類）
+│   └── tools/            # 18 個 MCP tool（一檔一類）
 │       ├── __init__.py       # FastMCP + session + 匯入
 │       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
 │       ├── auth.py           # login, logout
@@ -357,7 +331,7 @@ export NTUT_PASSWORD=你的密碼
 │       ├── semester.py       # get_semester_list
 │       ├── timetable.py      # get_timetable, get_course_list, get_semester_credits, get_ischool_course_list
 │       ├── syllabus.py       # get_course_syllabus, get_course_description
-│       ├── files.py          # get_course_files, get_course_file_url, download_course_file, download_course_all_files
+│       ├── files.py          # ischool_file_download
 │       ├── videos.py         # get_course_videos, get_course_video_url
 │       ├── bulletin.py       # get_bulletin_list, get_bulletin_reply, get_bulletin_reply_by_index
 │       └── notes.py          # get_course_note, set_course_note
