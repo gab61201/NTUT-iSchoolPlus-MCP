@@ -10,7 +10,7 @@ from ._helpers import _ensure_timetable, _extract_ext, _get_files_internal, _req
 logger = logging.getLogger("ntut-ischoolplus-mcp")
 
 
-async def _download_single_file(course, identifier: str, index: int, save_path: str) -> dict:
+async def _download_single_file(course, identifier: str, save_path: str) -> dict:
     file_info = course.file_dict.get(identifier)
     if not file_info:
         return {"error": f"找不到檔案 {identifier}"}
@@ -34,7 +34,6 @@ async def _download_single_file(course, identifier: str, index: int, save_path: 
                         f.write(chunk)
                         file_size += len(chunk)
             return {
-                "index": index,
                 "text": file_info.get("text", ""),
                 "saved_to": save_path,
                 "size_bytes": file_size,
@@ -53,8 +52,6 @@ async def _download_all_files(course, save_dir: str) -> dict:
 
     os.makedirs(save_dir, exist_ok=True)
 
-    file_index_map = {fid: i for i, fid in enumerate(course.file_dict.keys())}
-
     history_path = os.path.join(save_dir, "_downloads.json")
     history = {}
     if os.path.exists(history_path):
@@ -68,7 +65,7 @@ async def _download_all_files(course, save_dir: str) -> dict:
     files_to_download = []
     skipped_files = []
     for fid, fi in course.file_dict.items():
-        entry = {"index": file_index_map[fid], "text": fi.get("text", "")}
+        entry = {"text": fi.get("text", "")}
         if fid in downloaded_ids:
             skipped_files.append(entry)
             continue
@@ -77,7 +74,7 @@ async def _download_all_files(course, save_dir: str) -> dict:
             entry["reason"] = "無下載連結"
             skipped_files.append(entry)
             continue
-        files_to_download.append((fid, fi, file_index_map[fid]))
+        files_to_download.append((fid, fi))
 
     total = len(files_to_download)
     if total == 0:
@@ -95,7 +92,7 @@ async def _download_all_files(course, save_dir: str) -> dict:
     failed_files = []
     new_identifiers = []
 
-    for idx, (fid, fi, file_index) in enumerate(files_to_download, 1):
+    for idx, (fid, fi) in enumerate(files_to_download, 1):
         href = fi["href"]
         text = fi.get("text", fid)
         filename = f"{text}.{_extract_ext(href)}"
@@ -118,12 +115,12 @@ async def _download_all_files(course, save_dir: str) -> dict:
                     await asyncio.sleep(2 ** (attempt - 1))
 
         if success:
-            saved_files.append({"index": file_index, "text": text, "path": filepath})
+            saved_files.append({"text": text, "path": filepath})
             new_identifiers.append(fid)
             print(f"[ischool_file_download] [{idx}/{total}] OK: {text}", file=sys.stderr)
             logger.info("ischool_file_download: [%d/%d] OK: %s", idx, total, text)
         else:
-            failed_files.append({"index": file_index, "text": text, "error": last_error})
+            failed_files.append({"text": text, "error": last_error})
             print(f"[ischool_file_download] [{idx}/{total}] FAIL: {text} — {last_error}", file=sys.stderr)
             logger.warning("ischool_file_download: [%d/%d] FAIL: %s — %s", idx, total, text, last_error)
 
@@ -165,7 +162,7 @@ async def ischool_file_download(
         if index >= len(file_keys):
             return json.dumps({"error": f"index {index} 超出範圍 (0~{len(file_keys)-1})"}, ensure_ascii=False)
         identifier = file_keys[index]
-        result = await _download_single_file(course, identifier, index, save_path)
+        result = await _download_single_file(course, identifier, save_path)
         return json.dumps(result, ensure_ascii=False)
 
     # --- single course, all files ---

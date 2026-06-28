@@ -53,7 +53,6 @@ async def get_course_video_url(seme: str, course_id: str, index: int) -> str:
 
     return json.dumps(
         {
-            "index": index,
             "text": video_info.get("text", ""),
             "url": url,
         },

@@ -21,7 +21,7 @@ async def get_bulletin_list(seme: str, course_id: str) -> str:
         })
 
     return json.dumps(
-        {"seme": seme, "course_id": course_id, "bulletins": items, "count": len(items)},
+        {"seme": seme, "course_id": course_id, "bulletins": items},
         ensure_ascii=False,
     )
 
@@ -89,7 +89,6 @@ async def get_bulletin(seme: str, course_id: str, index: int) -> str:
     result = {
         "seme": seme,
         "course_id": course_id,
-        "index": index,
         "subject": item.get("subject", ""),
         "postdate": item.get("postdate", ""),
         "poster": item.get("realname", "").strip(),
