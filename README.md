@@ -224,7 +224,7 @@ export NTUT_PASSWORD=你的密碼
 
 ### get_course_video_url
 
-取得指定影片的串流網址。支援 iStudy 內嵌播放器、local 影片檔、IP cam 三種來源。
+取得指定影片的串流網址。成功時直接回傳 URL 字串，失敗回傳 `{"error": "..."}` 的 JSON 字串。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
