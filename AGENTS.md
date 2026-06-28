@@ -53,6 +53,10 @@ The timetable page (`Select.jsp?format=-2&code=...`) contains both `ShowSyllabus
 
 This tool iterates `ischool_courses` only. If all iSchool courses also appear in the main timetable, the result is legitimately empty. Do not treat this as a bug.
 
+### iSchool course content requires per-course context request
+
+Before fetching files, videos, or bulletins for any iSchool course, you must first GET `https://istudy.ntut.edu.tw/xmlapi/index.php?action=my-course-path-info&onlyProgress=0&descendant=1&cid={8-digit-cid}` for that specific course. This sets the session context — without it, subsequent requests (forum_ajax, SCORM, etc.) will fail or return wrong data. One course at a time; there is no batching.
+
 ### Single persistent httpx session
 
 All requests share one `httpx.AsyncClient` with cookies and `follow_redirects=True`. Session state is preserved across tool calls until `logout()`.
