@@ -13,6 +13,8 @@ class Course:
         self.id = ""
         self.bid = ""
         self.credits = ""
+        self.classroom = ""
+        self.ischool_cid = ""
         self.status = ""
         self.data = {}
 
@@ -234,5 +236,25 @@ class Course:
         )
         try:
             return json.loads(bulletin_reply_html.text)
+        except (json.JSONDecodeError, ValueError):
+            return None
+
+    async def get_bulletin_whisper(self, nid: str) -> list | None:
+        if not self.bid:
+            await self.get_bulletin()
+            if not self.bid:
+                return None
+
+        post_data = {
+            "action": "getWhisper",
+            "bid": self.bid,
+            "nid": nid,
+        }
+        whisper_html = await self.scraper.session.post(
+            "https://istudy.ntut.edu.tw/mooc/controllers/forum_ajax.php",
+            data=post_data,
+        )
+        try:
+            return json.loads(whisper_html.text)
         except (json.JSONDecodeError, ValueError):
             return None

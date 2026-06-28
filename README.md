@@ -193,10 +193,10 @@ export NTUT_PASSWORD=你的密碼
 
 從 i 學園下載課程檔案。`save_path` 為唯一必填參數，其餘依組合決定行為：
 
-| `seme` | `course_id` | `identifier` | 行為 |
+| `seme` | `course_id` | `index` | 行為 |
 |:---:|:---:|:---:|------|
-| 指定 | 指定 | 指定 | 下載該檔案到 `save_path`（含檔名） |
-| 指定 | 指定 | 空 | 下載該課程全部檔案到 `save_path/{課程名}_{課號}/` |
+| 指定 | 指定 | ≥0 | 下載該檔案到 `save_path`（含檔名） |
+| 指定 | 指定 | -1 | 下載該課程全部檔案到 `save_path/{課程名}_{課號}/` |
 | 指定 | 空 | — | 下載該學期所有課程到 `save_path/{seme}/{課程名}_{課號}/` |
 | 空 | — | — | 下載全部學期所有課程，按 `seme/課程/` 分層 |
 
@@ -207,13 +207,13 @@ export NTUT_PASSWORD=你的密碼
 | `save_path` | string | 本機儲存路徑或目錄 |
 | `seme` | string | 學期代碼（可省略） |
 | `course_id` | string | 課程代碼（6 位數字，可省略） |
-| `identifier` | string | 檔案識別碼（可省略） |
+| `index` | integer | 檔案索引（從 `get_course_asset_list` 取得，-1 = 不限） |
 
 須先登入。
 
-### get_course_videos
+### get_course_asset_list
 
-取得指定課程在 i 學園上的錄影列表。回傳每部影片的 identifier 與標題。
+取得指定課程在 i 學園上的檔案與錄影列表。回傳每個項目的 `index`、標題、更新時間；檔案額外含檔名。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
@@ -230,7 +230,7 @@ export NTUT_PASSWORD=你的密碼
 |------|------|------|
 | `seme` | string | 學期代碼 |
 | `course_id` | string | 課程代碼（6 位數字） |
-| `identifier` | string | 影片識別碼（從 `get_course_videos` 取得） |
+| `index` | integer | 影片索引（從 `get_course_asset_list` 取得） |
 
 須先登入。
 
@@ -303,7 +303,7 @@ export NTUT_PASSWORD=你的密碼
 │       ├── timetable.py      # get_timetable, get_course_list (含 total_credits), get_ischool_course_list
 │       ├── syllabus.py       # get_course_syllabus, get_course_description
 │       ├── files.py          # ischool_file_download
-│       ├── videos.py         # get_course_videos, get_course_video_url
+│       ├── videos.py         # get_course_asset_list, get_course_video_url
 │       ├── bulletin.py       # get_bulletin_list, get_bulletin
 │       └── notes.py          # get_course_note, set_course_note
 ├── nportal/

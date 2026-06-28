@@ -5,3 +5,4 @@ __pycache__/
 uv.lock
 tmp/
 *.html
+tool_test_report.md

@@ -1,4 +1,27 @@
+from datetime import datetime, timedelta, timezone
+
 from . import mcp, session
+
+
+def _extract_ext(href: str) -> str:
+    if href.startswith("https://istudy.ntut.edu.tw/"):
+        ext = href.rsplit(".", 1)[-1].rsplit("?", 1)[0]
+        if len(ext) > 10 or "/" in ext:
+            return "html"
+        return ext
+    return "html"
+
+
+def _tick_to_iso(identifier: str) -> str:
+    parts = identifier.rsplit("_", 1)
+    if len(parts) == 2:
+        try:
+            tick_us = int(parts[1])
+            dt = datetime.fromtimestamp(tick_us / 1_000_000, tz=timezone(timedelta(hours=8)))
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        except (ValueError, OSError):
+            return ""
+    return ""
 
 
 def _require_login():

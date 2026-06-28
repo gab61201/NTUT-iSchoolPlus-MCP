@@ -81,18 +81,34 @@ class SessionManager:
         for i in range(1, 10):
             timetable.append([str(i)] + [None] * 5)
 
-        timetable_html = re.search(
-            r"<table border=1>.+</table>", html_text, re.DOTALL
-        )
-        if not timetable_html:
+        # ── 分離上方時間格與下方選課表 ──
+        tables = re.findall(r"<table border=1.+?</table>", html_text, re.DOTALL)
+        if len(tables) < 2:
             return "無法解析課表"
+        upper_grid = tables[0]
+        lower_list = tables[1]
 
-        timetable_html_text = timetable_html.group()  # type:ignore
-        all_classes = re.findall(
-            r"<tr>\s*<td>\d{6}.+?</tr>", timetable_html_text, re.DOTALL
-        )
+        # ── 從上方時間格填 timetable（含每格教室） ──
+        period_rows = re.findall(r"<tr>\s*<th>第 \d+ 節.+?</tr>", upper_grid, re.DOTALL)
+        for idx, row_html in enumerate(period_rows):
+            cells = re.split(r"<td[^>]*>", row_html)
+            for day_idx in range(5):
+                cell = cells[day_idx + 1] if day_idx + 1 < len(cells) else ""
+                name_match = re.search(r"Curr\.jsp.+?>([^<]+)</A>", cell)
+                if not name_match:
+                    continue
+                display = name_match.group(1)
+                room_match = re.search(r"Croom\.jsp.+?>([^<]+)</A>", cell)
+                if room_match:
+                    display += " @ " + room_match.group(1)
+                timetable[idx + 1][day_idx + 1] = display
 
+        # ── 從下方選課表建 course_list ──
         self.course_list.setdefault(seme, {})
+
+        all_classes = re.findall(
+            r"<tr>\s*<td>\d{6}.+?</tr>", lower_list, re.DOTALL
+        )
 
         for class_html in all_classes:
             course = Course(self.scraper)
@@ -107,7 +123,10 @@ class SessionManager:
             if credits:
                 course.credits = credits.group(1)
 
-            # 偵測退選/撤選狀態
+            classroom_match = re.search(r'Croom\.jsp.+?>([^<]+)</A>', class_html)
+            if classroom_match:
+                course.classroom = classroom_match.group(1).strip()
+
             if re.search(r"(?:退選|撤選)", class_html):
                 course.status = "退選"
             else:
@@ -133,17 +152,6 @@ class SessionManager:
                 course.syllabus_url = (
                     "https://aps.ntut.edu.tw/course/tw/" + syllabus_url.group()
                 )
-
-            hour_list = class_html.split("<td>")[6:13]
-            for i in range(7):
-                if hour_list[i] != "\u3000":
-                    hours = hour_list[i].split()
-                    for h in hours:
-                        try:
-                            h_int = int(h)
-                            timetable[h_int][i + 1] = course.name
-                        except (ValueError, IndexError):
-                            pass
 
             self.course_list[seme][course.id] = course
 
@@ -178,12 +186,14 @@ class SessionManager:
             course = self.course_list.get(seme, {}).get(course_id)
             if course:
                 course.file_url = file_url
+                course.ischool_cid = data.group(1)
             else:
                 ischool_course = Course(self.scraper)
                 ischool_course.seme = seme
                 ischool_course.id = course_id
                 ischool_course.name = course_name
                 ischool_course.file_url = file_url
+                ischool_course.ischool_cid = data.group(1)
                 self.ischool_courses.setdefault(seme, {})[course_id] = ischool_course
 
         return True
