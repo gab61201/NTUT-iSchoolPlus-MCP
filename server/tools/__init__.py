@@ -15,5 +15,6 @@ from . import videos
 from . import bulletin
 from . import notes
 from . import homework
+from . import calendar
 
 __all__ = ["mcp"]

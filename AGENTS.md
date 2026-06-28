@@ -26,7 +26,7 @@ NTUT_PASSWORD=nportal密碼
 ## Architecture
 
 ```
-server/tools/*.py   # 16 MCP tools (one module per domain)
+server/tools/*.py   # 17 MCP tools (one module per domain)
 nportal/            # core: scraper (httpx), session, course, constants
 main.py             # entry point: just calls mcp.run()
 ```
@@ -64,6 +64,10 @@ All requests share one `httpx.AsyncClient` with cookies and `follow_redirects=Tr
 ### Notes are local JSON files
 
 `get_course_note` / `set_course_note` read/write JSON files to disk at a caller-specified `notes_dir`. These are stored locally, not on the NTUT servers.
+
+### School calendar is public (no login required)
+
+`get_school_calendar` reads the NTUT Google Calendar iCal feed. It uses the shared httpx session but works without login. Summary text is UTF-8 and may appear garbled in some terminals — the data itself is correct.
 
 ## NTUT-iSchoolMate/
 
