@@ -16,5 +16,6 @@ from . import bulletin
 from . import notes
 from . import homework
 from . import calendar
+from . import graduation
 
 __all__ = ["mcp"]

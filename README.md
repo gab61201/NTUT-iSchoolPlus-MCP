@@ -114,13 +114,31 @@ export NTUT_STUDENT_ID=你的學號
 export NTUT_PASSWORD=你的密碼
 ```
 
-## Tools (17)
+## Tools (18)
 
 ### get_school_calendar
 
 取得北科大全校行事曆（Google Calendar iCal feed）。回傳所有活動：名稱、開始/結束時間、地點、說明，依日期新到舊排序。不須登入。
 
 無參數。
+
+### get_graduation_standard
+
+取得課程標準（畢業科目表）。依參數決定回傳層級：
+
+| 參數組合 | 回傳內容 |
+|----------|----------|
+| `year` only | 學制列表（四技、碩士班等） |
+| `year` + `matric` | 系所列表（含各系學分統計） |
+| `year` + `matric` + `division` | 完整課程科目表 + 畢業門檻 |
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `year` | integer | 入學年度，例如 113 |
+| `matric` | string | 學制代碼，例如 "7"（四技）。常用值：5=五專, 6=二技, 7=四技, 8=碩士班, 9=博士班, A=碩士在職班, F=進修部四技 |
+| `division` | string | 系所代碼，例如 "590"（資工系）或 "823"（電資學士班資工） |
+
+無須登入。
 
 ### login
 
@@ -312,7 +330,7 @@ export NTUT_PASSWORD=你的密碼
 ├── main.py              # MCP 入口（FastMCP server）
 ├── server/
 │   ├── __init__.py
-│   └── tools/            # 17 個 MCP tool
+│   └── tools/            # 18 個 MCP tool
 │       ├── __init__.py       # FastMCP + session + 匯入
 │       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
 │       ├── auth.py           # login (含 student info), logout
@@ -324,6 +342,7 @@ export NTUT_PASSWORD=你的密碼
 │       ├── bulletin.py       # get_bulletin_list, get_bulletin
 │       ├── homework.py       # get_course_homework_list
 │       ├── calendar.py       # get_school_calendar (Google Calendar iCal)
+│       ├── graduation.py     # get_graduation_standard (課程科目表)
 │       └── notes.py          # get_course_note, set_course_note
 ├── nportal/
 │   ├── __init__.py
@@ -331,6 +350,7 @@ export NTUT_PASSWORD=你的密碼
 │   ├── session.py       # SessionManager（狀態管理、課表解析）
 │   ├── course.py        # Course 類別（大綱、檔案、影片、公告）
 │   ├── calendar.py      # 行事曆（iCal 抓取+解析）
+│   ├── graduation.py    # 課程標準（Cprog.jsp 解析）
 │   └── constants.py     # URL 常數
 └── pyproject.toml
 ```
