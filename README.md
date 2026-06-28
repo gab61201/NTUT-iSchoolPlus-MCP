@@ -114,7 +114,7 @@ export NTUT_STUDENT_ID=你的學號
 export NTUT_PASSWORD=你的密碼
 ```
 
-## Tools (15)
+## Tools (16)
 
 ### login
 
@@ -257,6 +257,17 @@ export NTUT_PASSWORD=你的密碼
 
 須先登入。
 
+### get_course_homework_list
+
+取得指定課程在 i 學園上的作業/報告列表。回傳每個項目的 `index`、名稱、類型、狀態、截止日、完成度等。
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `seme` | string | 學期代碼 |
+| `course_id` | string | 課程代碼（6 位數字） |
+
+須先登入。
+
 ### get_course_note
 
 讀取指定課程的筆記（JSON 檔，含建立/更新時間戳）。
@@ -295,7 +306,7 @@ export NTUT_PASSWORD=你的密碼
 ├── main.py              # MCP 入口（FastMCP server）
 ├── server/
 │   ├── __init__.py
-│   └── tools/            # 15 個 MCP tool
+│   └── tools/            # 16 個 MCP tool
 │       ├── __init__.py       # FastMCP + session + 匯入
 │       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
 │       ├── auth.py           # login (含 student info), logout
@@ -305,6 +316,7 @@ export NTUT_PASSWORD=你的密碼
 │       ├── files.py          # ischool_file_download
 │       ├── videos.py         # get_course_asset_list, get_course_video_url
 │       ├── bulletin.py       # get_bulletin_list, get_bulletin
+│       ├── homework.py       # get_course_homework_list
 │       └── notes.py          # get_course_note, set_course_note
 ├── nportal/
 │   ├── __init__.py

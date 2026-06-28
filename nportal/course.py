@@ -1,6 +1,7 @@
 import re
 import json
 import logging
+from bs4 import BeautifulSoup
 from .scraper import WebScraper
 
 
@@ -258,3 +259,62 @@ class Course:
             return json.loads(whisper_html.text)
         except (json.JSONDecodeError, ValueError):
             return None
+
+    async def fetch_homework_list(self) -> list | None:
+        if self.file_url:
+            await self.scraper.get(self.file_url)
+
+        response = await self.scraper.get(
+            "https://istudy.ntut.edu.tw/learn/homework/homework_list.php"
+        )
+        if not response:
+            return None
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        boxes = soup.select("div.box2[data-type='homework']")
+
+        homework_list = []
+        for box in boxes:
+            item = {}
+
+            type_el = box.select_one(".icon-user-blue, .icon-user-green")
+            if type_el:
+                item["type"] = type_el.get("title", "").replace("作業型態: ", "")
+
+            percent_el = box.select_one(".sparkpie")
+            if percent_el:
+                item["percent"] = percent_el.get("title", "")
+
+            title_area = box.select_one(".title")
+            if title_area:
+                name_span = title_area.select_one("span[style]")
+                if name_span:
+                    item["name"] = name_span.get("title", "")
+
+            exhibit_btn = box.select_one(".operate button")
+            if exhibit_btn:
+                item["exhibit"] = exhibit_btn.get("title", "")
+
+            status_el = box.select_one(".caption-enter")
+            if status_el:
+                item["status"] = status_el.text.strip()
+
+            deadline_el = box.select_one(".sub-text")
+            if deadline_el:
+                item["deadline"] = deadline_el.text.strip()
+
+            rating_el = box.select_one(".process-btn.rating")
+            item["has_peer_review"] = bool(
+                rating_el and "display: none" not in str(rating_el.get("style", ""))
+            )
+
+            score_btn = box.select_one(".process-btn.score")
+            if score_btn:
+                onclick = score_btn.get("onclick", "")
+                match = re.search(r"view_homework\(.+?,\s*'(.+?)'", onclick)
+                if match:
+                    item["eid"] = match.group(1)
+
+            homework_list.append(item)
+
+        return homework_list
