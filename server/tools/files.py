@@ -5,7 +5,7 @@ import os
 import sys
 
 from . import mcp, session
-from ._helpers import _extract_ext, _require_login
+from ._helpers import _ensure_timetable, _extract_ext, _get_files_internal, _require_login
 
 logger = logging.getLogger("ntut-ischoolplus-mcp")
 
@@ -23,20 +23,28 @@ async def _download_single_file(course, identifier: str, index: int, save_path: 
     if save_dir:
         os.makedirs(save_dir, exist_ok=True)
 
-    file_size = 0
-    async with course.scraper.session.stream("GET", href) as resp:
-        resp.raise_for_status()
-        with open(save_path, "wb") as f:
-            async for chunk in resp.aiter_bytes():
-                f.write(chunk)
-                file_size += len(chunk)
+    last_error = ""
+    for attempt in range(1, 4):
+        try:
+            file_size = 0
+            async with course.scraper.session.stream("GET", href) as resp:
+                resp.raise_for_status()
+                with open(save_path, "wb") as f:
+                    async for chunk in resp.aiter_bytes():
+                        f.write(chunk)
+                        file_size += len(chunk)
+            return {
+                "index": index,
+                "text": file_info.get("text", ""),
+                "saved_to": save_path,
+                "size_bytes": file_size,
+            }
+        except Exception as e:
+            last_error = str(e)
+            if attempt < 3:
+                await asyncio.sleep(2 ** (attempt - 1))
 
-    return {
-        "index": index,
-        "text": file_info.get("text", ""),
-        "saved_to": save_path,
-        "size_bytes": file_size,
-    }
+    return {"error": f"下載失敗（已重試 3 次）: {last_error}"}
 
 
 async def _download_all_files(course, save_dir: str) -> dict:
@@ -135,18 +143,6 @@ async def _download_all_files(course, save_dir: str) -> dict:
     }
 
 
-async def _ensure_course_with_files(seme: str, course_id: str):
-    """Like _ensur_file_context but also fetches files."""
-    from ._helpers import _ensure_file_context
-
-    course = await _ensure_file_context(seme, course_id)
-    if not course.file_dict and not course.video_dict:
-        ok = await course.fetch_files()
-        if not ok:
-            raise RuntimeError("無法取得課程檔案")
-    return course
-
-
 @mcp.tool()
 async def ischool_file_download(
     save_path: str,
@@ -164,7 +160,7 @@ async def ischool_file_download(
 
     # --- single file ---
     if seme and course_id and index >= 0:
-        course = await _ensure_course_with_files(seme, course_id)
+        course = await _get_files_internal(seme, course_id)
         file_keys = list(course.file_dict.keys())
         if index >= len(file_keys):
             return json.dumps({"error": f"index {index} 超出範圍 (0~{len(file_keys)-1})"}, ensure_ascii=False)
@@ -174,7 +170,7 @@ async def ischool_file_download(
 
     # --- single course, all files ---
     if seme and course_id:
-        course = await _ensure_course_with_files(seme, course_id)
+        course = await _get_files_internal(seme, course_id)
         dirname = f"{course.name}_{course.id}".replace("/", "_").replace("\\", "_")
         save_dir = os.path.join(save_path, dirname)
         result = await _download_all_files(course, save_dir)
@@ -197,11 +193,7 @@ async def ischool_file_download(
     total_stats = {"saved": 0, "skipped": 0, "failed": 0, "courses": 0, "courses_no_files": 0}
 
     for s in semesters:
-        if s not in session.course_list:
-            r = await session.fetch_timetable(s)
-            if isinstance(r, str):
-                all_results[s] = {"error": r}
-                continue
+        await _ensure_timetable(s)
 
         ok = await session.fetch_course_file_urls()
         if isinstance(ok, str):

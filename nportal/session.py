@@ -52,9 +52,6 @@ class SessionManager:
         self.student_id = ""
 
     async def fetch_seme_list(self) -> list[str] | str:
-        if not self._logged_in:
-            return "尚未登入"
-
         if self.seme_list:
             return self.seme_list
 
@@ -69,9 +66,6 @@ class SessionManager:
         return self.seme_list
 
     async def fetch_timetable(self, seme: str) -> list[list] | str:
-        if not self._logged_in:
-            return "尚未登入"
-
         html_text = await self.scraper.fetch_seme_timetable_html(seme)
         if not html_text:
             return f"無法取得 {seme} 課表"
@@ -158,9 +152,6 @@ class SessionManager:
         return timetable
 
     async def fetch_course_file_urls(self) -> bool | str:
-        if not self._logged_in:
-            return "尚未登入"
-
         html_text = await self.scraper.fetch_course_list_html()
         if not html_text:
             return "無法取得 i 學園課程列表"
@@ -259,9 +250,6 @@ class SessionManager:
             self.student_info = {"student_id": self.student_id}
 
     async def fetch_student_info(self) -> dict | str:
-        if not self._logged_in:
-            return "尚未登入"
-
         if self.student_info:
             return self.student_info
 

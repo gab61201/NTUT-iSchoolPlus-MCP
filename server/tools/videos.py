@@ -39,12 +39,14 @@ async def get_course_asset_list(seme: str, course_id: str) -> str:
 @mcp.tool()
 async def get_course_video_url(seme: str, course_id: str, index: int) -> str:
     course = await _get_files_internal(seme, course_id)
-    await course.fetch_files()
     video_keys = list(course.video_dict.keys())
     if index < 0 or index >= len(video_keys):
         return json.dumps({"error": f"index {index} 超出範圍 (0~{len(video_keys)-1})"}, ensure_ascii=False)
     identifier = video_keys[index]
     video_info = course.video_dict.get(identifier)
+    if not video_info:
+        return json.dumps({"error": f"找不到影片 index {index}"}, ensure_ascii=False)
+
     url = await course.fetch_video(identifier)
     if not url:
         return json.dumps({"error": "無法取得影片串流網址"}, ensure_ascii=False)

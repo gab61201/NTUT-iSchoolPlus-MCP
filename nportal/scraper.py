@@ -10,10 +10,6 @@ from httpx import Response
 from .constants import *
 
 urllib3.disable_warnings(InsecureRequestWarning)
-logging.basicConfig(
-    level=logging.WARNING,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 
 class WebScraper:
