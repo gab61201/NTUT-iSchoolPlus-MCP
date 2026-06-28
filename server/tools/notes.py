@@ -9,7 +9,7 @@ from . import mcp
 async def get_course_note(seme: str, course_id: str, notes_dir: str) -> str:
     note_path = os.path.join(notes_dir, f"{seme}_{course_id}_note.json")
     if not os.path.exists(note_path):
-        return json.dumps({"seme": seme, "course_id": course_id, "content": "", "note_path": note_path}, ensure_ascii=False)
+        return json.dumps({"content": "", "note_path": note_path}, ensure_ascii=False)
     try:
         with open(note_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -32,8 +32,6 @@ async def set_course_note(seme: str, course_id: str, content: str, notes_dir: st
             pass
 
     data = {
-        "seme": seme,
-        "course_id": course_id,
         "content": content,
         "created_at": existing.get("created_at", datetime.now(timezone.utc).isoformat()),
         "updated_at": datetime.now(timezone.utc).isoformat(),

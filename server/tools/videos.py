@@ -27,8 +27,6 @@ async def get_course_asset_list(seme: str, course_id: str) -> str:
     ]
     return json.dumps(
         {
-            "seme": seme,
-            "course_id": course_id,
             "files": files,
             "videos": videos,
         },

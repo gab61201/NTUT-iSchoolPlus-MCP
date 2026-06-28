@@ -10,7 +10,7 @@ async def get_timetable(seme: str) -> str:
     result = await session.fetch_timetable(seme)
     if isinstance(result, str):
         return json.dumps({"error": result}, ensure_ascii=False)
-    return json.dumps({"seme": seme, "timetable": result}, ensure_ascii=False, default=str)
+    return json.dumps({"timetable": result}, ensure_ascii=False, default=str)
 
 
 @mcp.tool()
@@ -27,7 +27,7 @@ async def get_course_list(seme: str) -> str:
         except (ValueError, TypeError):
             pass
     return json.dumps(
-        {"seme": seme, "courses": courses, "count": len(courses), "total_credits": total},
+        {"courses": courses, "count": len(courses), "total_credits": total},
         ensure_ascii=False,
     )
 
@@ -52,6 +52,6 @@ async def get_ischool_course_list(seme: str) -> str:
             "status": status,
         })
     return json.dumps(
-        {"seme": seme, "courses": courses, "count": len(courses)},
+        {"courses": courses, "count": len(courses)},
         ensure_ascii=False,
     )

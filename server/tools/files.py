@@ -172,8 +172,7 @@ async def ischool_file_download(
         save_dir = os.path.join(save_path, dirname)
         result = await _download_all_files(course, save_dir)
         return json.dumps({
-            "seme": seme, "course_id": course_id, "course": course.name,
-            "save_dir": save_dir, **result,
+            "course": course.name, "save_dir": save_dir, **result,
         }, ensure_ascii=False)
 
     # --- multiple courses (one seme or all semesters) ---
