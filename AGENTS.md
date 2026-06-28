@@ -2,7 +2,7 @@
 
 ## Project identity
 
-MCP server (FastMCP) that scrapes NTUT iSchool+ — courses, timetables, syllabi, files, videos, bulletins.
+MCP server (FastMCP) that scrapes NTUT iSchool+ — courses, timetables, syllabi, files, videos, bulletins, calendar, graduation standards.
 
 ## Commands
 
@@ -67,7 +67,20 @@ All requests share one `httpx.AsyncClient` with cookies and `follow_redirects=Tr
 
 ### School calendar is public (no login required)
 
-`get_school_calendar` reads the NTUT Google Calendar iCal feed. It uses the shared httpx session but works without login. Summary text is UTF-8 and may appear garbled in some terminals — the data itself is correct.
+`get_school_calendar` reads the NTUT Google Calendar iCal feed. It uses the shared httpx session but works without login. Default range is today + 12 months; use `from_date` / `to_date` to customize. Summary text is UTF-8 and may appear garbled in some terminals — the data itself is correct.
+
+### Graduation standard is public (no login required)
+
+`get_graduation_standard` reads `Cprog.jsp` from the APS course system. It works without login. The APS HTML has many unclosed `<td>` tags — the parser uses regex block-splitting instead of BeautifulSoup.
+
+### Graduation standard parameters
+
+The tool accepts 1-3 params. With fewer params, it returns the next level of navigation:
+- `year` only → matric (學制) list
+- `year` + `matric` → division (系所) list with credit stats  
+- `year` + `matric` + `division` → full course table + graduation rules
+
+Common matric values: 7=四技, 6=二技, 8=碩士班, 9=博士班, 5=五專, A=碩士在職班, D=EMBA, F=進修部四技, G=第二專長, H=微學程, 1=學程.
 
 ## NTUT-iSchoolMate/
 

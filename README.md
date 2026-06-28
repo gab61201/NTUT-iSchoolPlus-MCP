@@ -118,9 +118,14 @@ export NTUT_PASSWORD=你的密碼
 
 ### get_school_calendar
 
-取得北科大全校行事曆（Google Calendar iCal feed）。回傳所有活動：名稱、開始/結束時間、地點、說明，依日期新到舊排序。不須登入。
+取得北科大全校行事曆（Google Calendar iCal feed）。依日期範圍回傳活動：名稱、開始/結束時間、地點、說明。不須登入。
 
-無參數。
+| 參數 | 類型 | 預設 | 說明 |
+|------|------|------|------|
+| `from_date` | string | 今天 | YYYY-MM-DD |
+| `to_date` | string | from_date + 12 月 | YYYY-MM-DD |
+
+不加參數時預設回傳今天起 12 個月內的事件。
 
 ### get_graduation_standard
 
