@@ -130,10 +130,10 @@ def _parse_course_table(html: str) -> dict:
         text = " ".join(rules)
         for label, key in [("最低畢業學分", "min_credits"), ("共同必修", "common_required"),
                            ("專業必修", "major_required"), ("專業選修", "major_elective")]:
-            m = re.search(rf"{label}[：:]\s*(\d+)", text)
+            m = re.search(rf"{label}[；：:：]?\s*(\d+)", text)
             if m:
                 summary[key] = int(m.group(1))
-        m = re.search(r"跨域及自由選修\s*(\d+)", text)
+        m = re.search(r"跨域及自由選修[；：:：]?\s*(\d+)", text)
         if m:
             summary["cross_domain"] = int(m.group(1))
 
