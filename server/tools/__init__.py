@@ -13,7 +13,6 @@ from . import syllabus
 from . import files
 from . import videos
 from . import bulletin
-from . import info
 from . import notes
 
 __all__ = ["mcp"]

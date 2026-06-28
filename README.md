@@ -114,11 +114,11 @@ export NTUT_STUDENT_ID=你的學號
 export NTUT_PASSWORD=你的密碼
 ```
 
-## Tools (18)
+## Tools (17)
 
 ### login
 
-登入 NTUT nportal 並執行 SSO 驗證（課程系統 + i 學園）。可傳入帳密，或設定環境變數 `NTUT_STUDENT_ID` / `NTUT_PASSWORD` 後無參數呼叫。
+登入 NTUT nportal 並執行 SSO 驗證（課程系統 + i 學園）。可傳入帳密，或設定環境變數 `NTUT_STUDENT_ID` / `NTUT_PASSWORD` 後無參數呼叫。登入成功時一併回傳姓名、email、角色。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
@@ -134,12 +134,6 @@ export NTUT_PASSWORD=你的密碼
 ### get_semester_list
 
 取得該學生所有修課學期代碼列表（例如 `["1132", "1131"]`）。
-
-無參數。須先登入。
-
-### get_student_info
-
-從 nportal 首頁抓取個人資訊（姓名、系所、學號等）。登入時自動快取。
 
 無參數。須先登入。
 
@@ -323,11 +317,10 @@ export NTUT_PASSWORD=你的密碼
 ├── main.py              # MCP 入口（FastMCP server）
 ├── server/
 │   ├── __init__.py
-│   └── tools/            # 18 個 MCP tool（一檔一類）
+│   └── tools/            # 17 個 MCP tool（一檔一類）
 │       ├── __init__.py       # FastMCP + session + 匯入
 │       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
-│       ├── auth.py           # login, logout
-│       ├── info.py           # get_student_info
+│       ├── auth.py           # login (含 student info), logout
 │       ├── semester.py       # get_semester_list
 │       ├── timetable.py      # get_timetable, get_course_list, get_semester_credits, get_ischool_course_list
 │       ├── syllabus.py       # get_course_syllabus, get_course_description

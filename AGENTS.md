@@ -26,7 +26,7 @@ NTUT_PASSWORD=nportal密碼
 ## Architecture
 
 ```
-server/tools/*.py   # 18 MCP tools (one module per domain)
+server/tools/*.py   # 17 MCP tools (one module per domain)
 nportal/            # core: scraper (httpx), session, course, constants
 main.py             # entry point: just calls mcp.run()
 ```

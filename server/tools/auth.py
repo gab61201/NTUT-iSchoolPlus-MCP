@@ -21,7 +21,10 @@ async def login(student_id: str = "", password: str = "") -> str:
     err = await session.login(student_id, password)
     if err:
         return json.dumps({"error": err}, ensure_ascii=False)
-    return json.dumps({"success": True, "student_id": session.student_id}, ensure_ascii=False)
+    return json.dumps(
+        {"success": True, "student_id": session.student_id, **session.student_info},
+        ensure_ascii=False,
+    )
 
 
 @mcp.tool()
