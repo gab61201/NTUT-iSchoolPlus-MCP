@@ -114,7 +114,7 @@ export NTUT_STUDENT_ID=你的學號
 export NTUT_PASSWORD=你的密碼
 ```
 
-## Tools (16)
+## Tools (15)
 
 ### login
 
@@ -236,36 +236,24 @@ export NTUT_PASSWORD=你的密碼
 
 ### get_bulletin_list
 
-取得指定課程的公告列表。
+取得指定課程的公告列表（僅回傳索引、標題、時間、張貼者）。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
 | `seme` | string | 學期代碼 |
 | `course_id` | string | 課程代碼（6 位數字） |
 
-須先登入。
+須先登入。回傳的 `index` 用於 `get_bulletin`。
 
-### get_bulletin_reply
+### get_bulletin
 
-取得指定公告的回覆串（含完整回覆內容）。
-
-| 參數 | 類型 | 說明 |
-|------|------|------|
-| `seme` | string | 學期代碼 |
-| `course_id` | string | 課程代碼（6 位數字） |
-| `nid` | string | 公告編號（從 `get_bulletin_list` 回傳的 `node` 欄位取得） |
-
-須先登入。
-
-### get_bulletin_reply_by_index
-
-用索引（第幾則公告）直接查回覆，不需要手動找 nid。
+取得指定公告的完整內文與全部回覆。
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
 | `seme` | string | 學期代碼 |
 | `course_id` | string | 課程代碼（6 位數字） |
-| `index` | integer | 公告索引（0 = 第一則） |
+| `index` | integer | 公告索引（從 `get_bulletin_list` 取得，0 = 第一則） |
 
 須先登入。
 
@@ -307,7 +295,7 @@ export NTUT_PASSWORD=你的密碼
 ├── main.py              # MCP 入口（FastMCP server）
 ├── server/
 │   ├── __init__.py
-│   └── tools/            # 16 個 MCP tool（一檔一類）
+│   └── tools/            # 15 個 MCP tool
 │       ├── __init__.py       # FastMCP + session + 匯入
 │       ├── _helpers.py       # _require_login, _ensure_course, _get_files_internal
 │       ├── auth.py           # login (含 student info), logout
@@ -316,7 +304,7 @@ export NTUT_PASSWORD=你的密碼
 │       ├── syllabus.py       # get_course_syllabus, get_course_description
 │       ├── files.py          # ischool_file_download
 │       ├── videos.py         # get_course_videos, get_course_video_url
-│       ├── bulletin.py       # get_bulletin_list, get_bulletin_reply, get_bulletin_reply_by_index
+│       ├── bulletin.py       # get_bulletin_list, get_bulletin
 │       └── notes.py          # get_course_note, set_course_note
 ├── nportal/
 │   ├── __init__.py
